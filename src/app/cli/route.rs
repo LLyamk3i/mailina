@@ -29,7 +29,9 @@ pub async fn route(words: &[String]) {
         [command, subcommands @ ..] if command == "credentials" => {
             super::credentials::parse(subcommands);
         }
-        [command, subcommands @ ..] if command == "run" || command == "fetch" => {
+        [command, subcommands @ ..]
+            if command == "run" || command == "fetch" || command == "audit" =>
+        {
             super::execute::parse(words).await;
         }
         [] => println!("No command provided. Try: {} --help", "mailina".cyan()),

@@ -4,7 +4,7 @@ pub struct Message {
     pub subject: String,
     pub body: String,
     // The physical reality of the acquired keywords
-    pub tags: Vec<String>, 
+    pub tags: Vec<String>,
 }
 
 impl Message {
@@ -15,9 +15,10 @@ impl Message {
         }
 
         let haystack = format!("{} {}", self.subject, self.body).to_lowercase();
-        
+
         // We filter the lexicon for matches and absorb them directly into our state
-        self.tags = lexicon.words
+        self.tags = lexicon
+            .words
             .iter()
             .filter(|&word| haystack.contains(word))
             .cloned() // Converts &String back into owned String

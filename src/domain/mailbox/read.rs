@@ -1,17 +1,8 @@
-use async_imap::Session;
-use async_native_tls::TlsStream;
 use colored::Colorize;
 use futures::StreamExt;
-use mailparse::ParsedMail;
-use tokio::net::TcpStream;
-use tokio_util::compat::Compat;
 
-pub struct Mailbox {
-    pub identity: String,
-    pub connection: Session<TlsStream<Compat<TcpStream>>>,
-}
-
-impl Mailbox {
+// We extend the parent Mailbox struct natively
+impl super::Mailbox {
     pub async fn read(&mut self, limit: u32) -> Result<Vec<crate::domain::Message>, String> {
         println!(
             "  {} Mailbox [{}] surveying inbox...",
@@ -32,13 +23,13 @@ impl Mailbox {
             self.identity.cyan(),
             total.to_string().yellow()
         );
+
         if total == 0 {
             return Ok(Vec::new());
         }
 
         let start = if total > limit { total - limit + 1 } else { 1 };
         let sequence = format!("{}:{}", start, total);
-
         let query = "(BODY.PEEK[])";
 
         let mut fetches = self
@@ -78,7 +69,8 @@ impl Mailbox {
                         tags: Vec::new(),
                     };
 
-                    message.body = extract(&document);
+                    // Using the pure function from document.rs
+                    message.body = super::document::extract(&document);
                     collection.push(message);
                 }
             }
@@ -86,31 +78,4 @@ impl Mailbox {
 
         Ok(collection)
     }
-}
-
-fn extract(document: &ParsedMail) -> String {
-    let mimetype = document.ctype.mimetype.clone();
-
-    if mimetype == "text/plain" {
-        return document.get_body().unwrap_or_default().trim().to_string();
-    }
-
-    let mut content = String::new();
-
-    for segment in &document.subparts {
-        let text = extract(segment);
-        if !text.is_empty() {
-            if segment.ctype.mimetype == "text/plain" {
-                return text;
-            }
-            content.push_str(&text);
-            content.push('\n');
-        }
-    }
-
-    if document.subparts.is_empty() && mimetype == "text/html" {
-        return document.get_body().unwrap_or_default().trim().to_string();
-    }
-
-    content.trim().to_string()
 }

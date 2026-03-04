@@ -4,6 +4,7 @@ use tokio::task;
 impl super::Fleet {
     pub async fn survey(
         &self,
+        targets: &[String],
         limit: u32,
         lexicon: &crate::domain::Lexicon,
         destinations: &[crate::domain::Destination],
@@ -11,7 +12,22 @@ impl super::Fleet {
     ) {
         let mut tasks = Vec::new();
 
-        for unit in self.units.clone() {
+        let active_units: Vec<_> = if targets.is_empty() {
+            self.units.clone()
+        } else {
+            self.units
+                .iter()
+                .filter(|u| targets.contains(&u.email))
+                .cloned()
+                .collect()
+        };
+
+        if active_units.is_empty() {
+            println!("  [INFO] No fleet units matched the target list.");
+            return;
+        }
+
+        for unit in active_units {
             let local_lexicon = lexicon.words.clone();
             let local_destinations = destinations.to_vec();
 
