@@ -1,10 +1,14 @@
 use colored::Colorize;
 use std::io::{self, Read};
 
-pub fn parse(words: &[String]) {
+pub async fn parse(words: &[String]) {
     let mut fleet = crate::domain::Fleet::load();
 
     match words {
+        [verb] if verb == "clean" => {
+            println!("{}", "Commencing fleet health check...".cyan().bold());
+            fleet.prune().await;
+        }
         [verb, flags @ ..] if verb == "add" => {
             let mut email = String::new();
             let mut password = String::new();
@@ -76,11 +80,12 @@ pub fn parse(words: &[String]) {
         }
         _ => {
             println!(
-                "Invalid credentials command. Try {}, {}, {}, or {}.",
+                "Invalid credentials command. Try {}, {}, {}, {}, or {}.",
                 "add".cyan(),
                 "import".cyan(),
                 "list".cyan(),
-                "delete".cyan()
+                "delete".cyan(),
+                "clean".cyan()
             );
         }
     }

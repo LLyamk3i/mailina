@@ -25,6 +25,7 @@ pub fn show(words: &[String]) {
             println!("  mailina credentials import <path>    Import colon-separated file");
             println!("  mailina credentials list             Show all active units");
             println!("  mailina credentials delete <email>  Remove a unit from the fleet");
+            println!("  mailina credentials clean           Test and remove dead credentials");
         }
         Some("fetch") => {
             println!("{} - Perform one-time email survey", "fetch".cyan().bold());

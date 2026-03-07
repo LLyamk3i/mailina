@@ -27,7 +27,7 @@ pub async fn route(words: &[String]) {
             super::keywords::parse(subcommands);
         }
         [command, subcommands @ ..] if command == "credentials" => {
-            super::credentials::parse(subcommands);
+            super::credentials::parse(subcommands).await;
         }
         [command, subcommands @ ..]
             if command == "run" || command == "fetch" || command == "audit" =>
